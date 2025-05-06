@@ -1,4 +1,5 @@
 # ReputaWallet
+<<<<<<< HEAD
 
 A tool to check the reputation of Cardano wallet addresses, especially for NFT and OTC traders. Now with AI-powered wallet analysis and advanced Cardano metrics!
 
@@ -103,3 +104,6 @@ Feel free to submit issues and enhancement requests!
 MIT
 
 Any question please contact @Calvith on telegram or gmail dqv12908@gmail.com
+=======
+Your fast, simple tool to assess the reputation of Cardano wallets for safer NFT and OTC trading.
+>>>>>>> 867d9a9044987ddce4c78ae55d2582540d7fedd7
