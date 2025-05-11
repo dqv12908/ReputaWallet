@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Github, Facebook, Twitter, Send, ShieldCheck, AlertTriangle, XCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import api from './api';
+import { Github, Facebook, Twitter, Send, ShieldCheck, AlertTriangle, XCircle, Flag, CheckCircle } from 'lucide-react';
+import ReportModal from './components/ReportModal';
+import { MeshProvider, useWallet } from '@meshsdk/react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import WalletConnect from './WalletConnect';
 
 function getScoreColor(score) {
   if (score >= 80) return 'text-green-600';
@@ -16,11 +20,58 @@ function getScoreBadge(score) {
   return <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-bold"><XCircle className="w-4 h-4" />High Risk</span>;
 }
 
-export default function App() {
+function AppContent() {
   const [walletAddress, setWalletAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [canVote, setCanVote] = useState(false);
+  const [userScore, setUserScore] = useState(null);
+  const [userAddress, setUserAddress] = useState('');
+  const [walletPopup, setWalletPopup] = useState(null);
+
+  const { connected, wallet, name, getChangeAddress } = useWallet();
+
+  useEffect(() => {
+    const checkUserScore = async () => {
+      setError(null);
+      setUserScore(null);
+      setCanVote(false);
+      setUserAddress('');
+      if (connected && wallet) {
+        try {
+          setLoading(true);
+          const changeAddress = await getChangeAddress();
+          setUserAddress(changeAddress);
+          const resp = await api.post('/api/check-reputation', { walletAddress: changeAddress });
+          setUserScore(resp.data.reputationScore);
+          setCanVote(resp.data.reputationScore >= 40);
+        } catch (e) {
+          setError('Failed to get wallet address or reputation score.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    checkUserScore();
+    // eslint-disable-next-line
+  }, [connected, wallet]);
+
+  // Listen for wallet address from popup
+  React.useEffect(() => {
+    function handleMessage(event) {
+      if (event.data && event.data.type === 'CARDANO_WALLET_ADDRESS') {
+        setUserAddress(event.data.address);
+        setWalletPopup((popup) => {
+          if (popup && !popup.closed) popup.close();
+          return null;
+        });
+      }
+    }
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleCheckReputation = async () => {
     if (!walletAddress) {
@@ -31,7 +82,7 @@ export default function App() {
     setError(null);
     setResult(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/check-reputation', {
+      const response = await api.post('/api/check-reputation', {
         walletAddress,
       });
       setResult(response.data);
@@ -49,6 +100,35 @@ export default function App() {
           <img src={process.env.PUBLIC_URL + '/logo.png'} alt="ReputaWallet Logo" className="w-28 h-28 mb-2 shadow" />
           <h1 className="text-3xl font-extrabold text-center text-blue-700 tracking-tight">ReputaWallet</h1>
           <div className="text-center text-slate-600 text-base mt-1 font-medium max-w-md">Your fast, simple tool to assess the reputation of Cardano wallets for safer NFT and OTC trading.</div>
+        </div>
+        {/* Connect Wallet Button */}
+        <div className="flex flex-col items-center mb-6">
+          <button
+            className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition mb-2"
+            onClick={() => {
+              const popup = window.open(
+                '/wallet-connect',
+                'walletConnect',
+                'width=420,height=600,left=200,top=200,noopener'
+              );
+              setWalletPopup(popup);
+            }}
+          >
+            Connect Wallet
+          </button>
+          {userAddress && (
+            <div className="text-xs text-slate-700 break-all mt-2">Connected Address: <span className="font-mono">{userAddress}</span></div>
+          )}
+          {userScore !== null && (
+            <div className="text-xs mt-1">
+              Your Reputation Score: <span className={getScoreColor(userScore)}>{userScore}</span>
+              {userScore >= 40 ? (
+                <span className="ml-2 text-green-600 font-bold">(Eligible to Vote)</span>
+              ) : (
+                <span className="ml-2 text-red-600 font-bold">(Not eligible to vote)</span>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <input
@@ -140,8 +220,36 @@ export default function App() {
                   <div className="text-slate-600">Activity Score: <span className="font-bold">{result.metrics.activityScore}</span></div>
                 </div>
               </div>
+              <div className="mt-4 p-4 bg-white/80 rounded-xl border border-slate-100">
+                <div className="font-semibold text-slate-700 mb-2 text-base">Community Reports</div>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <span className="text-slate-600">
+                      Scam Reports: <span className="font-bold text-red-600">{result.reports?.scam || 0}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-slate-600">
+                      Legit Reports: <span className="font-bold text-green-600">{result.reports?.legit || 0}</span>
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                  disabled={!canVote}
+                  title={canVote ? '' : 'Connect a wallet with reputation score 40+ to vote'}
+                >
+                  <Flag className="w-4 h-4" />
+                  Report / Verify Wallet
+                </button>
+                {!canVote && (
+                  <div className="text-xs text-red-600 mt-2">You must connect a wallet with reputation score 40+ to vote.</div>
+                )}
+              </div>
             </div>
-            {/* NOTE: Reputation disclaimer */}
             <div className="mt-2 mb-4 text-xs text-slate-500 text-center italic">
               Note: The reputation score is an automated assessment for OTC trustworthiness only. It does not reflect personal reputation or serve to defame any individual or entity.
             </div>
@@ -176,5 +284,18 @@ export default function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <MeshProvider>
+        <Routes>
+          <Route path="/wallet-connect" element={<WalletConnect />} />
+          <Route path="/*" element={<AppContent />} />
+        </Routes>
+      </MeshProvider>
+    </BrowserRouter>
   );
 } 

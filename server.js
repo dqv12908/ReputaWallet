@@ -3,9 +3,23 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { GoogleGenAI } = require('@google/genai');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// JSON file for storing reports
+const REPORTS_FILE = path.join(__dirname, 'walletReports.json');
+
+function readReports() {
+  if (!fs.existsSync(REPORTS_FILE)) return [];
+  return JSON.parse(fs.readFileSync(REPORTS_FILE, 'utf8'));
+}
+
+function writeReports(reports) {
+  fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2), 'utf8');
+}
 
 // Middleware
 app.use(cors());
@@ -136,6 +150,12 @@ app.post('/api/check-reputation', async (req, res) => {
         if (!walletAddress) {
             return res.status(400).json({ error: 'Wallet address is required' });
         }
+
+        // Get report information from JSON file
+        const allReports = readReports().filter(r => r.walletAddress === walletAddress);
+        const scamCount = allReports.filter(r => r.reportType === 'scam').length;
+        const legitCount = allReports.filter(r => r.reportType === 'legit').length;
+        const reportSummary = { scam: scamCount, legit: legitCount };
 
         let stakeAddress = walletAddress;
         let addresses = [];
@@ -323,13 +343,52 @@ app.post('/api/check-reputation', async (req, res) => {
             reputationLevel,
             walletType,
             metrics: walletStats,
-            aiInsight
+            aiInsight,
+            reports: reportSummary
         };
         res.json(response);
     } catch (error) {
         console.error('Error checking wallet reputation:', error?.response?.data || error.message);
         res.status(500).json({ error: 'Failed to check wallet reputation' });
     }
+});
+
+// New endpoint for reporting a wallet (JSON file version)
+app.post('/api/report-wallet', (req, res) => {
+    const { walletAddress, reportType, reportedBy, description } = req.body;
+
+    if (!walletAddress || !reportType || !reportedBy || !description) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+    if (!['scam', 'legit'].includes(reportType)) {
+        return res.status(400).json({ error: 'Invalid report type' });
+    }
+
+    const reports = readReports();
+    reports.push({
+        walletAddress,
+        reportType,
+        reportedBy,
+        description,
+        timestamp: new Date().toISOString()
+    });
+    writeReports(reports);
+
+    res.json({ message: 'Report submitted successfully' });
+});
+
+// New endpoint for getting wallet reports (JSON file version)
+app.get('/api/wallet-reports/:walletAddress', (req, res) => {
+    const { walletAddress } = req.params;
+    const reports = readReports().filter(r => r.walletAddress === walletAddress);
+
+    const scamReports = reports.filter(r => r.reportType === 'scam');
+    const legitReports = reports.filter(r => r.reportType === 'legit');
+
+    res.json({
+        scam: { count: scamReports.length, reports: scamReports },
+        legit: { count: legitReports.length, reports: legitReports }
+    });
 });
 
 app.listen(PORT, () => {

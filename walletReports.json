@@ -1,0 +1,23 @@
+[
+  {
+    "walletAddress": "addr1q970jmerx8ecd59tgru6ugrhzcv448ehc5ghcpwchlwqy362qncv0n945r2d7vcvrvrv2vrsz6rajdej5e2zjumfcxysnx69pv",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-10T18:53:08.605Z"
+  },
+  {
+    "walletAddress": "addr1q970jmerx8ecd59tgru6ugrhzcv448ehc5ghcpwchlwqy362qncv0n945r2d7vcvrvrv2vrsz6rajdej5e2zjumfcxysnx69pv",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-10T18:56:41.436Z"
+  },
+  {
+    "walletAddress": "addr1q970jmerx8ecd59tgru6ugrhzcv448ehc5ghcpwchlwqy362qncv0n945r2d7vcvrvrv2vrsz6rajdej5e2zjumfcxysnx69pv",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "asca",
+    "timestamp": "2025-05-10T19:09:55.272Z"
+  }
+]

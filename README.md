@@ -1,5 +1,4 @@
 # ReputaWallet
-<<<<<<< HEAD
 
 A tool to check the reputation of Cardano wallet addresses, especially for NFT and OTC traders. Now with AI-powered wallet analysis and advanced Cardano metrics!
 
@@ -13,6 +12,8 @@ A tool to check the reputation of Cardano wallet addresses, especially for NFT a
 - Social links and branding
 - **Clickable Cardanoscan links** for all address types (wallet, stake, pool)
 - **User-friendly scoring**: More fair for Cardano's real-world usage
+- **Multi-wallet support**: Connect with Lace, Eternl, Flint, Nami, Typhon, OKX, and more via MeshJS
+- **Secure wallet connection**: Wallet connect happens in a popup window for isolation and compatibility
 
 ## Prerequisites
 
@@ -75,35 +76,34 @@ npm start
 
 ## Usage
 
-1. Enter a Cardano wallet or stake address.
-2. Click "Check" to analyze the wallet.
-3. View the reputation score, detailed metrics, and **AI Analysis**.
-4. Click on any address, stake key, or pool to view it on Cardanoscan.
-5. Use the social links to connect or view the project.
+1. Click **Connect Wallet**. A popup window will open for you to select and connect your Cardano wallet (Lace, Eternl, Flint, Nami, Typhon, OKX, etc.).
+2. After connecting, the popup will close and your wallet address will appear in the main app.
+3. Enter any Cardano wallet or stake address, or use your connected address, and click **Check** to analyze the wallet.
+4. View the reputation score, detailed metrics, and **AI Analysis**.
 
-## Metrics & Scoring
-- **Advanced metrics:** Staking status, rewards, pool, spam, activity, and more.
-- **User-friendly scoring:** More fair for Cardano's real-world usage (see Score Breakdown in the app).
-- **All links** (wallet, stake, pool) are clickable and open Cardanoscan for easy verification.
+## Troubleshooting
 
-## AI Analysis
-- The backend uses Google Gemini to provide a risk summary and insight for each wallet.
-- Make sure your Gemini API key is valid and you have not exceeded your quota.
+- **No wallet options in popup?**
+  - Make sure you have a supported Cardano wallet extension installed and enabled (Lace, Eternl, Flint, Nami, Typhon, OKX, etc.).
+  - Some extensions may not inject in popups or incognito mode. Try opening the popup in a normal window.
+  - If you still see no options, try opening http://localhost:3000/wallet-connect directly in a new tab.
 
-## Note
-- The reputation score is an automated assessment for OTC trustworthiness only. It does not reflect personal reputation or serve to defame any individual or entity.
+- **Popup does not close or send address?**
+  - Make sure you are connecting a wallet with on-chain activity (has received ADA or made a transaction).
+  - Some extensions may not expose an address for fresh wallets with 0 balance and no transactions.
 
-## Customization
-- Place your logo at `client/public/logo.png`.
-- Edit project name/slogan in `client/src/App.js` if needed.
+- **Failed to check wallet reputation?**
+  - This can happen if the wallet address has never been used on-chain. Fund the wallet or use one with at least one transaction.
 
-## Contributing
-Feel free to submit issues and enhancement requests!
+- **Wallet not detected?**
+  - Make sure the extension is enabled for localhost and not restricted.
+  - Try a different browser or disable other extensions that may interfere.
+
+## Security
+- The app does **not** store your private keys or seed phrases.
+- Wallet connection is handled securely via browser extension APIs and MeshJS.
 
 ## License
 MIT
 
 Any question please contact @Calvith on telegram or gmail dqv12908@gmail.com
-=======
-Your fast, simple tool to assess the reputation of Cardano wallets for safer NFT and OTC trading.
->>>>>>> 867d9a9044987ddce4c78ae55d2582540d7fedd7
