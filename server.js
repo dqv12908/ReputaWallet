@@ -346,6 +346,7 @@ app.post('/api/check-reputation', async (req, res) => {
             aiInsight,
             reports: reportSummary
         };
+        console.log(`[API] Reputation score for ${walletAddress}:`, totalScore);
         res.json(response);
     } catch (error) {
         console.error('Error checking wallet reputation:', error?.response?.data || error.message);

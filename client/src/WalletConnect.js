@@ -1,27 +1,34 @@
 import React from 'react';
 import { MeshProvider, CardanoWallet, useWallet } from '@meshsdk/react';
 
-export default function WalletConnect() {
-  const { connected, getChangeAddress } = useWallet();
+function WalletConnectContent() {
+  const { connected, wallet } = useWallet();
 
   React.useEffect(() => {
     console.log('WalletConnect: connected =', connected);
     async function sendAddress() {
-      if (connected) {
-        const address = await getChangeAddress();
-        console.log('WalletConnect: got address', address);
-        if (window.opener) {
-          window.opener.postMessage({ type: 'CARDANO_WALLET_ADDRESS', address }, '*');
+      if (connected && wallet) {
+        try {
+          const address = await wallet.getChangeAddress();
+          console.log('WalletConnect: got address', address);
+          localStorage.setItem('wallet_address', address);
+          console.log('Wallet address written to localStorage:', address);
           window.close();
+        } catch (error) {
+          console.error('Error getting change address:', error);
         }
       }
     }
     sendAddress();
-  }, [connected, getChangeAddress]);
+  }, [connected, wallet]);
 
+  return <CardanoWallet label="Select Wallet" />;
+}
+
+export default function WalletConnect() {
   return (
     <MeshProvider>
-      <CardanoWallet label="Select Wallet" />
+      <WalletConnectContent />
     </MeshProvider>
   );
 } 

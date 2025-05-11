@@ -46,7 +46,7 @@ function AppContent() {
           setUserAddress(changeAddress);
           const resp = await api.post('/api/check-reputation', { walletAddress: changeAddress });
           setUserScore(resp.data.reputationScore);
-          setCanVote(resp.data.reputationScore >= 40);
+          setCanVote(resp.data.reputationScore >= 0);
         } catch (e) {
           setError('Failed to get wallet address or reputation score.');
         } finally {
@@ -61,7 +61,9 @@ function AppContent() {
   // Listen for wallet address from popup
   React.useEffect(() => {
     function handleMessage(event) {
+      console.log('Message event received:', event);
       if (event.data && event.data.type === 'CARDANO_WALLET_ADDRESS') {
+        console.log('Received wallet address from popup:', event.data.address);
         setUserAddress(event.data.address);
         setWalletPopup((popup) => {
           if (popup && !popup.closed) popup.close();
@@ -72,6 +74,36 @@ function AppContent() {
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const address = localStorage.getItem('wallet_address');
+      if (address) {
+        console.log('Received wallet address from localStorage (polling):', address);
+        setUserAddress(address);
+        localStorage.removeItem('wallet_address');
+        clearInterval(interval);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Trigger scoring when userAddress changes (from popup/localStorage)
+  useEffect(() => {
+    if (userAddress) {
+      setLoading(true);
+      setError(null);
+      setUserScore(null);
+      api.post('/api/check-reputation', { walletAddress: userAddress })
+        .then(resp => {
+          setUserScore(resp.data.reputationScore);
+          setCanVote(resp.data.reputationScore >= 0);
+          setResult(resp.data);
+        })
+        .catch(() => setError('Failed to check wallet reputation'))
+        .finally(() => setLoading(false));
+    }
+  }, [userAddress]);
 
   const handleCheckReputation = async () => {
     if (!walletAddress) {
@@ -93,6 +125,11 @@ function AppContent() {
     }
   };
 
+  // Debug logs for troubleshooting
+  console.log('DEBUG result:', result);
+  console.log('DEBUG canVote:', canVote);
+  console.log('DEBUG isReportModalOpen:', isReportModalOpen);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-6 sm:p-10 border border-slate-200">
@@ -103,30 +140,31 @@ function AppContent() {
         </div>
         {/* Connect Wallet Button */}
         <div className="flex flex-col items-center mb-6">
-          <button
-            className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition mb-2"
-            onClick={() => {
-              const popup = window.open(
-                '/wallet-connect',
-                'walletConnect',
-                'width=420,height=600,left=200,top=200,noopener'
-              );
-              setWalletPopup(popup);
-            }}
-          >
-            Connect Wallet
-          </button>
-          {userAddress && (
-            <div className="text-xs text-slate-700 break-all mt-2">Connected Address: <span className="font-mono">{userAddress}</span></div>
+          {userAddress ? (
+            <button
+              className="px-6 py-3 rounded-lg bg-green-600 text-white font-semibold mb-2 cursor-default"
+              disabled
+            >
+              Connected 🟢
+            </button>
+          ) : (
+            <button
+              className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition mb-2"
+              onClick={() => {
+                const popup = window.open(
+                  '/wallet-connect',
+                  'walletConnect',
+                  'width=420,height=600,left=200,top=200,noopener'
+                );
+                setWalletPopup(popup);
+              }}
+            >
+              Connect Wallet
+            </button>
           )}
           {userScore !== null && (
-            <div className="text-xs mt-1">
-              Your Reputation Score: <span className={getScoreColor(userScore)}>{userScore}</span>
-              {userScore >= 40 ? (
-                <span className="ml-2 text-green-600 font-bold">(Eligible to Vote)</span>
-              ) : (
-                <span className="ml-2 text-red-600 font-bold">(Not eligible to vote)</span>
-              )}
+            <div className="text-base font-semibold text-slate-800 mt-2">
+              Your reputation score: {userScore}
             </div>
           )}
         </div>
@@ -237,16 +275,21 @@ function AppContent() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsReportModalOpen(true)}
+                  onClick={() => {
+                    console.log('Report/Verify button clicked!');
+                    setIsReportModalOpen(true);
+                  }}
                   className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
-                  disabled={!canVote}
-                  title={canVote ? '' : 'Connect a wallet with reputation score 40+ to vote'}
+                  disabled={!userAddress}
+                  title={userAddress ? '' : 'Connect your wallet to report/verify'}
                 >
                   <Flag className="w-4 h-4" />
                   Report / Verify Wallet
                 </button>
-                {!canVote && (
-                  <div className="text-xs text-red-600 mt-2">You must connect a wallet with reputation score 40+ to vote.</div>
+                {!userAddress && (
+                  <div className="text-xs text-red-600 mt-2">
+                    You must connect your wallet to report or verify.
+                  </div>
                 )}
               </div>
             </div>
@@ -282,6 +325,21 @@ function AppContent() {
             <span className="font-medium text-slate-700">GitHub</span>
           </a>
         </div>
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          walletAddress={result?.input}
+          onReportSuccess={() => {
+            if (result?.input) {
+              api.post('/api/check-reputation', { walletAddress: result.input })
+                .then(resp => {
+                  setUserScore(resp.data.reputationScore);
+                  setCanVote(resp.data.reputationScore >= 0);
+                  setResult(resp.data);
+                });
+            }
+          }}
+        />
       </div>
     </div>
   );

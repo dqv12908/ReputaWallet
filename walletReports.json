@@ -19,5 +19,47 @@
     "reportedBy": "anonymous",
     "description": "asca",
     "timestamp": "2025-05-10T19:09:55.272Z"
+  },
+  {
+    "walletAddress": "addr1qyx7vnxzzvle46f3augarhfvanjrhszxv0k4r5j469hsv9806hpe8xdu5x33asg7ncnset5wfvlkpggtuyldvf6u63xqtd46l3",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "asd",
+    "timestamp": "2025-05-11T03:06:50.200Z"
+  },
+  {
+    "walletAddress": "addr1qyx7vnxzzvle46f3augarhfvanjrhszxv0k4r5j469hsv9806hpe8xdu5x33asg7ncnset5wfvlkpggtuyldvf6u63xqtd46l3",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-11T03:07:05.897Z"
+  },
+  {
+    "walletAddress": "addr1qyx7vnxzzvle46f3augarhfvanjrhszxv0k4r5j469hsv9806hpe8xdu5x33asg7ncnset5wfvlkpggtuyldvf6u63xqtd46l3",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-11T03:07:40.742Z"
+  },
+  {
+    "walletAddress": "addr1q8jm7lxn5hcxlrq3ywj7qgrnkvq2m5ftxcvptekg0g9uhvjdp0ruk0gushzk7hgv084d0e3e58czs03pwh3jn83qjtcsqm6g2m",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-11T03:10:35.140Z"
+  },
+  {
+    "walletAddress": "addr1q8jm7lxn5hcxlrq3ywj7qgrnkvq2m5ftxcvptekg0g9uhvjdp0ruk0gushzk7hgv084d0e3e58czs03pwh3jn83qjtcsqm6g2m",
+    "reportType": "scam",
+    "reportedBy": "anonymous",
+    "description": "scam",
+    "timestamp": "2025-05-11T03:12:31.211Z"
+  },
+  {
+    "walletAddress": "addr1q8jm7lxn5hcxlrq3ywj7qgrnkvq2m5ftxcvptekg0g9uhvjdp0ruk0gushzk7hgv084d0e3e58czs03pwh3jn83qjtcsqm6g2m",
+    "reportType": "legit",
+    "reportedBy": "anonymous",
+    "description": "legit",
+    "timestamp": "2025-05-11T03:44:01.658Z"
   }
 ]

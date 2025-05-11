@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@emurgo/cardano-serialization-lib-browser": "^11.5.0",
     "@emurgo/cip14-js": "^3.0.1",
     "@meshsdk/core": "^1.9.0-beta.43",
     "@meshsdk/react": "^1.9.0-beta.43",
-    "@mui/icons-material": "^5.14.20",
-    "@mui/material": "^5.14.20",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1",
     "@radix-ui/react-toast": "^1.0.4",
+    "assert": "^2.1.0",
     "axios": "^1.6.2",
     "buffer": "^6.0.3",
     "clsx": "^2.1.0",
@@ -23,7 +24,8 @@
     "react-google-recaptcha": "^3.1.0",
     "react-router-dom": "^7.6.0",
     "react-scripts": "5.0.1",
-    "tailwindcss": "^3.4.1"
+    "stream-browserify": "^3.0.0",
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

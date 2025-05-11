@@ -19,7 +19,8 @@ export default function ReportModal({ isOpen, onClose, walletAddress }) {
       await api.post('/api/report-wallet', {
         walletAddress,
         reportType,
-        reason: description,
+        reportedBy: 'anonymous',
+        description,
       });
       setSuccess(true);
       setDescription('');
